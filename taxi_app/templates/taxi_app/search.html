@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Taxi Finder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    {% load static %}
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: linear-gradient(135deg, #0A0B1A 0%, #1A1B2E 100%);
+            color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            color: #00D4FF;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+        h2 {
+            color: #7B61FF;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            position: relative;
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50px;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+            padding: 5px;
+            transition: all 0.3s ease;
+        }
+        .search-box:hover {
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+        .search-form {
+            display: flex;
+            align-items: center;
+        }
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #FFC107;
+            font-size: 18px;
+        }
+        #destination {
+            width: 100%;
+            padding: 12px 20px 12px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            background: transparent;
+            color: #FFFFFF;
+            outline: none;
+        }
+        #destination::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .go-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #00D4FF;
+            font-size: 18px;
+            cursor: pointer;
+            transition: color 0.3s, transform 0.3s;
+        }
+        .go-icon:hover {
+            color: #7B61FF;
+            transform: translateY(-50%) scale(1.2);
+        }
+        .search-border {
+            width: 100%;
+            height: 4px;
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+        }
+        .border {
+            fill: none;
+            stroke: #00D4FF;
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-miterlimit: 10;
+            animation: border-draw 2s ease infinite;
+        }
+        @keyframes border-draw {
+            0% { stroke-dasharray: 0, 671; stroke-dashoffset: 0; }
+            50% { stroke-dasharray: 671, 0; stroke-dashoffset: 0; }
+            100% { stroke-dasharray: 0, 671; stroke-dashoffset: 671; }
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        li {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 5px solid #FFC107;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        li:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+        }
+        a {
+            color: #00D4FF;
+            text-decoration: none;
+            font-weight: 600;
+            margin-right: 10px;
+            transition: color 0.3s;
+        }
+        a:hover {
+            color: #7B61FF;
+            text-shadow: 0 0 5px rgba(123, 97, 255, 0.5);
+        }
+        .no-results {
+            color: #FF6B6B;
+            text-align: center;
+            font-style: italic;
+            font-size: 16px;
+            text-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
+        }
+        .auth-links {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .auth-links a {
+            color: #00D4FF;
+        }
+        .auth-links a:hover {
+            color: #7B61FF;
+        }
+    </style>
+    <script>
+        function getLocationAndSubmit() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(sendPosition, showError);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function sendPosition(position) {
+            document.getElementById('lat').value = position.coords.latitude;
+            document.getElementById('lon').value = position.coords.longitude;
+            let destination = document.getElementById('destination').value;
+            if (destination.trim() !== '') {
+                document.getElementById('search-form').submit();
+            }
+        }
+
+        function showError(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("Location access denied. Search will show all available taxis.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    alert("Location request timed out.");
+                    break;
+                default:
+                    alert("An unknown error occurred.");
+                    break;
+            }
+        }
+    </script>
+</head>
+<body>
+    <main>
+        <div class="container">
+            <div class="auth-links">
+                {% if user.is_authenticated %}
+                    <p>Welcome, {{ user.username }}! <a href="{% url 'logout' %}">Log Out</a></p>
+                {% else %}
+                    <p><a href="{% url 'login' %}">Log In</a></p>
+                {% endif %}
+            </div>
+            <img src="{% static 'images/taxi.jpg' %}" alt="Taxi" width="50" style="display: block; margin: 20px auto; filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.5));">
+            <h1>Search for Taxi to Your Destination</h1>
+            <h2>Find Your Ride!</h2>
+            <div class="search-box">
+                <div class="search-icon"><i class="fas fa-search"></i></div>
+                <form id="search-form" class="search-form" method="get" action="{% url 'search' %}">
+                    <input type="text" id="destination" name="destination" placeholder="e.g., Pretoria" autocomplete="off">
+                    <input type="hidden" id="lat" name="latitude">
+                    <input type="hidden" id="lon" name="longitude">
+                </form>
+                <svg class="search-border" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 671 111" style="enable-background:new 0 0 671 111;" xml:space="preserve">
+                    <path class="border" d="M335.5,108.5h-280c-29.3,0-53-23.7-53-53v0c0-29.3,23.7-53,53-53h280"/>
+                    <path class="border" d="M335.5,108.5h280c29.3,0,53-23.7,53-53v0c0-29.3-23.7-53-53-53h-280"/>
+                </svg>
+                <div class="go-icon" onclick="getLocationAndSubmit()"><i class="fas fa-arrow-right"></i></div>
+            </div>
+            {% if results %}
+                <h2>Available Taxis (Nearest Rank):</h2>
+                <ul>
+                    {% for taxi in results %}
+                        <li>
+                            <strong>From:</strong> {{ taxi.rank.name }} ({{ taxi.rank.location }})<br>
+                            <strong>To:</strong> {{ taxi.destination }}<br>
+                            <strong>Price:</strong> R{{ taxi.price }}<br>
+                            <strong>Available:</strong> {% if taxi.available %}Yes{% else %}No{% endif %}<br>
+                            <strong>Distance:</strong> {{ taxi.rank.distance|floatformat:2 }} km<br>
+                            <a href="{% url 'route' taxi.rank.id %}">View Route to Rank</a><br>
+                            <a href="{% url 'add_review' taxi.id %}">Add Review</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="no-results">No taxis found. Try entering a destination or check available taxis in the admin panel.</p>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>
