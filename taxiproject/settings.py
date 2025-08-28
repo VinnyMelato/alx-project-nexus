@@ -21,12 +21,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # ...existing code...
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
-if not SECRET_KEY:
-    raise ValueError("The DJANGO_SECRET_KEY environment variable is not set!")
+#SECURITY WARNING: keep the secret key used in production secret!
 # ...existing code...
+from decouple import config
+import dj_database_url
 
+SECRET_KEY = config('DJANGO_SECRET_KEY')
+DATABASES = {
+    'default': dj_database_url.config(default=config('DATABASE_URL', default='sqlite:///db.sqlite3'))
+}
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
@@ -81,10 +84,9 @@ WSGI_APPLICATION = 'taxiproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import dj_database_url
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}'
-    )
+    'default': dj_database_url.config(default=config('DATABASE_URL', default='sqlite:///db.sqlite3'))
 }
 
 
