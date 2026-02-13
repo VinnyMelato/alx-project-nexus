@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: alx-project-nexus
+    env: python
+    plan: free
+    buildCommand: bash build.sh
+    startCommand: gunicorn taxiproject.wsgi:application
+    envVars:
+      - key: DEBUG
+        value: false
+      - key: PYTHON_VERSION
+        value: 3.13.0
